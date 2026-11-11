@@ -18,7 +18,7 @@ import time
 import urllib.parse
 import webbrowser
 
-VERSION = '0.9.6'
+VERSION = '0.9.7'
 PORT = 47821
 MAX_TASKS = 30
 VIEWING_MS = 12000
@@ -50,7 +50,7 @@ TOOLS = [
         'name': 'report_usage',
         'description': "Sends this task's token figures to the Usage Desk panel on this computer. The Usage Desk plugin calls it by itself. Call it by hand only when the cowork-usage skill says to.",
         'inputSchema': {'type': 'object', 'properties': {
-            'session': {'type': 'string'}, 'state': {'type': 'object'}, 'sentAt': {'type': 'integer'}, 'isCheck': {'type': 'boolean'},
+            'session': {'type': 'string'}, 'state': {'type': 'object'}, 'sentAt': {'type': 'integer'}, 'isCheck': {'type': 'boolean'}, 'viaPlugin': {'type': 'boolean'},
             'panel': {'type': 'string', 'description': 'The link of a Usage Desk panel that was just published, to remember it.'},
         }},
         'annotations': {'readOnlyHint': True},
@@ -136,6 +136,9 @@ def report(args):
     """Replaces a task's figures with the latest ones, so nothing piles up."""
     session = clean_id(args.get('session'))
     if 'state' not in args:
+        # Kept for troubleshooting: whether the plugin saw Claude's call, and whether a task id came with it.
+        seen = {'at': int(time.time() * 1000), 'hadTask': bool(session), 'viaPlugin': bool(args.get('viaPlugin'))}
+        change_state(lambda saved: saved.update(lastAsk=seen))
         return greet(session, args.get('panel'))
     if not session:
         raise ValueError('no session')

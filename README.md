@@ -34,8 +34,8 @@ You need:
 - **Python 3**, which macOS offers to install if it's missing
 
 1. Download both files from [`dist`](dist):
-   - `usage-desk-0.9.6.mcpb`, the extension
-   - `usage-desk-cowork-0.9.6.zip`, the plugin
+   - `usage-desk-0.9.7.mcpb`, the extension
+   - `usage-desk-cowork-0.9.7.zip`, the plugin
 2. Open the `.mcpb` file. The Claude desktop app asks to install the Usage Desk extension.
 3. In Cowork, open **Customize**, then upload the `.zip` file as a plugin.
 4. Start a task, send a message, then type `/cowork-usage`.
@@ -53,8 +53,8 @@ To update, install the newer `.mcpb` and replace the plugin with the newer `.zip
 Cowork re-reads its own setup, about 170,000 tokens, on every request Claude makes, even for "hi". That is Cowork's cost, not Usage Desk's, but it means every step Claude takes for Usage Desk is expensive in raw token counts. Nearly all of those tokens are cache re-reads, which are billed at a small fraction of the normal price and count far less towards your limits.
 
 - **Installing the extension and the plugin: none.** Neither calls Claude.
-- **The very first `/cowork-usage` after installing or updating: about 640,000 tokens**, nearly all cache re-reads, which was about $0.06 on Haiku 5.5 at list prices in a test. Claude publishes your private panel page in that run. This happens once per version.
-- **`/cowork-usage` in later tasks: about 3 requests**, so roughly 500,000 tokens and $0.03 on Haiku 5.5. This figure is an estimate from the steps involved, not yet a measurement. A larger model costs more for the same steps.
+- **The very first `/cowork-usage` after installing or updating: about 460,000 to 640,000 tokens**, nearly all cache re-reads, which was about $0.04 to $0.06 on Haiku 5.5 at list prices in tests. Claude publishes your private panel page in that run. This happens once per version.
+- **`/cowork-usage` in later tasks: about 4 requests**, so roughly 600,000 tokens and $0.04 on Haiku 5.5. This figure is an estimate from the steps involved, not yet a measurement. A larger model costs more for the same steps.
 - **Live updates after that: none.** The plugin sends figures without asking Claude.
 - **Keep warm and Compact** use your limit only when you press them.
 

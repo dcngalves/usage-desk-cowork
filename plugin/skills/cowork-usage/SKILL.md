@@ -5,7 +5,7 @@ description: Turn on Usage Desk for this task and open its panel beside the chat
 
 Every step here costs the person tokens, so use the fewest calls you can, with no commentary. Never read, list, rewrite or summarize anything not named below.
 
-1. Call `report_usage` with no arguments. Use ToolSearch first only if the tool is not loaded. Its answer holds `task` (this task's id) and `panel` (the link of the person's Usage Desk panel, or nothing).
+1. Run this one command: `cat .usage-desk-cowork/status.json 2>/dev/null || echo none`. The `task` value under `start` is this task's id. Then call `report_usage` with `session` set to that id, or with no arguments if there was none. Use ToolSearch first only if the tool is not loaded. Its answer holds `task` and `panel` (the link of the person's Usage Desk panel, or nothing).
 2. If you are told the panel is already open, skip to step 4.
 3. Open the panel beside this task: Artifact `action: "open"` with the `panel` link followed by `#` and the `task` id. If `task` is empty, or opening with the `#` part is refused, open the link alone.
 4. Reply only: `Usage Desk is open beside this task.`

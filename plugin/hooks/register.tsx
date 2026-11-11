@@ -195,7 +195,8 @@ async function refresh($: EngineInterface, deep: boolean, exact = false) {
 // look it up, and the panel is opened from here where the app allows it, which saves a request.
 async function greet($: EngineInterface, e: ToolCallInput, next: (e: ToolCallInput) => Promise<ToolCallResult>) {
   if (!sid) sid = await $.session.id()
-  const result = await next({ ...e, session: sid } as ToolCallInput)
+  const given = (e as unknown as { session?: unknown }).session
+  const result = await next({ ...e, session: typeof given === 'string' && given ? given : sid, viaPlugin: true } as ToolCallInput)
   try {
     if (result.deny !== undefined || result.isError) return result
     const panel = (JSON.parse(result.text ?? '{}') as { panel?: unknown }).panel
