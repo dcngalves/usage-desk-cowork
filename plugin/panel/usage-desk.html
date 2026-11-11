@@ -1,4 +1,4 @@
-<title>Usage Desk Cowork 0.9.4</title>
+<title>Usage Desk Cowork 0.9.5</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
 /* Layout: one narrow column, sized for a side panel. The palette is the Usage Desk window's own. */
@@ -42,6 +42,8 @@ input { font: inherit; color: inherit; background: var(--fill); border: 1px soli
   const SERVER = 'host:Usage_Desk'
   const PREFS = 'usage-desk-prefs'
   let mcp = null
+  let own = ''
+  let hasAsked = false
   const ready = (async () => { mcp = window.claude && window.claude.use ? await window.claude.use('mcp') : null })()
   // What each refusal means for the person, and what fixes it.
   const WORDS = {
@@ -69,8 +71,12 @@ input { font: inherit; color: inherit; background: var(--fill); border: 1px soli
       await ready
       if (!mcp) throw { code: 'no_app' }
       // Opened beside a task, the link ends in that task's id, and the panel follows that task alone.
-      const own = /^#([0-9a-f][0-9a-f-]{7,63})$/i.exec(location.hash || '')
-      const result = await mcp.callTool(SERVER, 'read_usage', own ? { task: own[1] } : {}, { cache: false })
+      const named = /^#([0-9a-f][0-9a-f-]{7,63})$/i.exec(location.hash || '')
+      if (named) own = named[1]
+      // Without an id in the link, the first reading asks which task opened this panel, and keeps to it.
+      const result = await mcp.callTool(SERVER, 'read_usage', own ? { task: own } : hasAsked ? {} : { isNew: true }, { cache: false })
+      hasAsked = true
+      if (!own && result && result.payload && result.payload.wanted) own = result.payload.wanted
       const figures = result && result.payload
       if (!figures || typeof figures !== 'object' || !Array.isArray(figures.tasks)) throw { code: 'bad_answer' }
       figures.prefs = { ...(figures.prefs || {}), ...localPrefs() }

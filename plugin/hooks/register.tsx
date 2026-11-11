@@ -12,6 +12,8 @@ const SEND_GAP_MS = 1500
 const IDLE_ASK_MS = 5000
 // With no panel open it still asks now and then, so a panel opened later is noticed.
 const IDLE_CHECK_MS = 20000
+// A send that Cowork neither allows nor refuses must not block the ones after it.
+const SEND_WAIT_MS = 8000
 const EXACT_EVERY = 2 * 60_000
 
 // Keep warm: one small ping shortly before the cache goes cold. It uses a little of the limit,
@@ -181,6 +183,7 @@ async function refresh($: EngineInterface, deep: boolean, exact = false) {
 // Claude's one call from the /cowork-usage skill. The task's id is added here, so Claude need not
 // look it up, and the panel is opened from here where the app allows it, which saves a request.
 async function greet($: EngineInterface, e: ToolCallInput, next: (e: ToolCallInput) => Promise<ToolCallResult>) {
+  if (!sid) sid = await $.session.id()
   const result = await next({ ...e, session: sid } as ToolCallInput)
   try {
     if (result.deny !== undefined || result.isError) return result
@@ -211,7 +214,10 @@ async function send($: EngineInterface, isCheck = false) {
     }
     const began = Date.now()
     // A check carries no figures: it only asks whether a panel is open and what its buttons asked for.
-    const result = await $.mcp.call(name.name, name.prefix + REPORT_TOOL, isCheck ? { session: sid, state: {}, isCheck: true } : { session: sid, state, sentAt: began })
+    if (!sid) sid = await $.session.id()
+    const call = $.mcp.call(name.name, name.prefix + REPORT_TOOL, isCheck ? { session: sid, state: {}, isCheck: true } : { session: sid, state, sentAt: began })
+    const result = await Promise.race([call, $.clock.sleep(SEND_WAIT_MS).then(() => undefined)])
+    if (!result) throw new Error('the program on the computer did not answer in time')
     if (result.isError) throw new Error(`the program refused the figures: ${JSON.stringify(result.content).slice(0, 220)}`)
     // A send from here can never raise a permission card: it is refused until the person has
     // chosen Always allow. So one that got through means the plugin may keep sending.
@@ -331,8 +337,9 @@ export const register: Register = on => {
     if (e.text !== WARM_PROMPT && !isPinging) {
       live.isWorking = true
       if (!BACKGROUND.has(e.origin?.kind ?? '')) stopWarm('Keep warm stopped: you sent a message.')
-      // Tells the panel right away that Claude has started, so the owl gets to work.
-      void send($)
+      // Tells the panel right away that Claude has started, so the owl gets to work. Only once a
+      // send has got through in this task: before that, Cowork may hold the call without answering.
+      if (link.isOpen) void send($)
     }
     return next(e)
   }).catch(($, e, next) => next(e))

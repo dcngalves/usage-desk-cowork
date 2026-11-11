@@ -34,8 +34,8 @@ You need:
 - **Python 3**, which macOS offers to install if it's missing
 
 1. Download both files from [`dist`](dist):
-   - `usage-desk-0.9.4.mcpb`, the extension
-   - `usage-desk-cowork-0.9.4.zip`, the plugin
+   - `usage-desk-0.9.5.mcpb`, the extension
+   - `usage-desk-cowork-0.9.5.zip`, the plugin
 2. Open the `.mcpb` file. The Claude desktop app asks to install the Usage Desk extension.
 3. In Cowork, open **Customize**, then upload the `.zip` file as a plugin.
 4. Start a task, send a message, then type `/cowork-usage`.

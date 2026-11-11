@@ -18,10 +18,11 @@ import time
 import urllib.parse
 import webbrowser
 
-VERSION = '0.9.4'
+VERSION = '0.9.5'
 PORT = 47821
 MAX_TASKS = 30
 VIEWING_MS = 12000
+GREET_MS = 5 * 60 * 1000
 ACTIONS = ('warm', 'compact', 'handoff', 'exact')
 SERVED = {'/window-lib.js': 'text/javascript', '/window-view.js': 'text/javascript'}
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -58,7 +59,7 @@ TOOLS = [
     {
         'name': 'read_usage',
         'description': 'Used by the Usage Desk panel itself to read the latest figures. Do not call this.',
-        'inputSchema': {'type': 'object', 'properties': {'task': {'type': 'string', 'description': 'Show this task instead of the most recent one.'}}},
+        'inputSchema': {'type': 'object', 'properties': {'task': {'type': 'string', 'description': 'Show this task instead of the most recent one.'}, 'isNew': {'type': 'boolean', 'description': 'True on a panel\'s first reading.'}}},
         'annotations': {'readOnlyHint': True},
     },
     {
@@ -162,6 +163,9 @@ def greet(session, panel):
     if isinstance(panel, str) and re.fullmatch(r'https://claude\.ai/[A-Za-z0-9/_-]{1,200}', panel):
         panels = {VERSION: panel}
         change_state(lambda saved: saved.update(panels=panels))
+    if session:
+        # A panel that opens in the next few minutes belongs to this task.
+        change_state(lambda saved: saved.update(greeted={'task': session, 'at': int(time.time() * 1000)}))
     if not session:
         # Without the plugin's help, the task that reported in the last minute is the one asking.
         paths = task_paths()
@@ -226,12 +230,17 @@ def summary_of(path):
     return value
 
 
-def page_data(task=None):
+def page_data(task=None, is_new=False):
     with open(VIEWING, 'w'):
         pass
     paths = task_paths()
     # A panel opened beside one task shows that task only, even before its first figures arrive.
     wanted = clean_id(task)
+    if not wanted and is_new:
+        # A panel that has just opened follows the task that asked for it.
+        greeted = read_state().get('greeted') or {}
+        if time.time() * 1000 - (greeted.get('at') or 0) < GREET_MS:
+            wanted = clean_id(greeted.get('task'))
     shown = os.path.join(TASKS, f'{wanted}.json') if wanted else (paths[0] if paths else None)
     return {
         'task': read_json(shown, None) if shown and shown in paths else None,
@@ -368,7 +377,7 @@ def handle(method, params):
             add_action(args['task'], args['action'])
             return {'content': [{'type': 'text', 'text': json.dumps({'queued': args['action']})}]}
         if name == 'read_usage':
-            return {'content': [{'type': 'text', 'text': json.dumps(page_data((params.get('arguments') or {}).get('task')))}]}
+            return {'content': [{'type': 'text', 'text': json.dumps(page_data((params.get('arguments') or {}).get('task'), bool((params.get('arguments') or {}).get('isNew'))))}]}
         if name == 'report_usage':
             return {'content': [{'type': 'text', 'text': json.dumps(report(params.get('arguments') or {}))}]}
         return {'content': [{'type': 'text', 'text': 'Unknown tool'}], 'isError': True}
