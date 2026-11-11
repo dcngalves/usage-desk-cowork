@@ -225,7 +225,7 @@ const friendlyTool = (tool        )         => {
 const JOBS                         = {
   Read: 'Read a file', Edit: 'Edited a file', MultiEdit: 'Edited a file', NotebookEdit: 'Edited a file', Write: 'Wrote a file',
   Grep: 'Searched inside files', Glob: 'Looked for files', WebSearch: 'Searched online', WebFetch: 'Opened a web page',
-  Bash: 'Ran a command', Agent: 'Started a helper', Task: 'Started a helper', Skill: 'Used a skill', AskUserQuestion: 'Asked you a question', Artifact: 'Made a page',
+  Bash: 'Ran a command', Agent: 'Started a helper', Task: 'Started a helper', Skill: 'Used a skill', AskUserQuestion: 'Asked you a question', Artifact: 'Made a page', ArtifactOpen: 'Opened a page',
 }
 const APPS                     = [[/chrome/i, 'Chrome'], [/browser/i, 'the browser'], [/gmail/i, 'Gmail'], [/calendar/i, 'Calendar'], [/drive/i, 'Google Drive'], [/sheets/i, 'Google Sheets'], [/docs/i, 'Google Docs'], [/slack/i, 'Slack'], [/notion/i, 'Notion'], [/figma/i, 'Figma'], [/linear/i, 'Linear']]
 const appName = (server        )         => {

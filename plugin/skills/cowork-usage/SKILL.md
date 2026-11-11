@@ -3,7 +3,7 @@ name: cowork-usage
 description: Turn on Usage Desk for this task and open its panel beside the chat. Use when asked to open Usage Desk or to see this task's token usage.
 ---
 
-Every step here costs the person tokens, so use the fewest calls you can, with no commentary. Never read, list, rewrite or summarize anything not named below.
+Every step here costs the person tokens, so use the fewest calls you can, with no commentary. Never read, list, rewrite or summarize anything not named below. Call no tool that is not named below, not even to check the time.
 
 1. Run this one command: `cat .usage-desk-cowork/status.json 2>/dev/null || echo none`. The `task` value under `start` is this task's id. Then call `report_usage` with `session` set to that id, or with no arguments if there was none. Use ToolSearch first only if the tool is not loaded. Its answer holds `task` and `panel` (the link of the person's Usage Desk panel, or nothing).
 2. Always open the panel beside this task: Artifact `action: "open"` with the `panel` link followed by `#` and the `task` id. If `task` is empty, or opening with the `#` part is refused, open the link alone.

@@ -1,5 +1,5 @@
 {
   "name": "usage-desk-cowork",
-  "version": "0.9.8",
-  "description": "Usage Desk for Cowork 0.9.8. Sends each Cowork task's token usage to the Usage Desk panel on your computer. Uses no tokens while it updates."
+  "version": "0.9.9",
+  "description": "Usage Desk for Cowork 0.9.9. Sends each Cowork task's token usage to the Usage Desk panel on your computer. Uses no tokens while it updates."
 }

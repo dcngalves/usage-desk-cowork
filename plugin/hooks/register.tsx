@@ -354,13 +354,16 @@ export const register: Register = on => {
 
   // What the agent touches, as it happens.
   on('tool.call', async ($, e, next) => {
-    const tool = e.tool
+    let tool: string = e.tool
     if (/__report_usage$/.test(tool) && !('state' in e) && (await inCowork($))) return greet($, e, next)
     if (isHousekeeping(tool) || !(await inCowork($))) return next(e)
     const fields = e as unknown as Record<string, unknown>
     // A command is shown by Claude's own description of it, never as raw shell text.
     const label = tool === 'Bash' ? (typeof fields.description === 'string' ? fields.description : '') : labelOf(fields)
-    const row: Activity = { id: e.tool_use_id, tool, label, agent: e.agentId ?? '', isDone: false, isFailed: false, at: Date.now() }
+    // Opening a page that already exists is not making one.
+    const isOpening = tool === 'Artifact' && fields.action === 'open'
+    if (isOpening) tool = 'ArtifactOpen'
+    const row: Activity = { id: e.tool_use_id, tool, label: isOpening ? '' : label, agent: e.agentId ?? '', isDone: false, isFailed: false, at: Date.now() }
     live.isWorking = true
     live.recent = [...live.recent, row].slice(-30)
     live.counts[tool] = (live.counts[tool] ?? 0) + 1
