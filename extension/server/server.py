@@ -18,7 +18,7 @@ import time
 import urllib.parse
 import webbrowser
 
-VERSION = '0.9.9'
+VERSION = '0.9.10'
 PORT = 47821
 MAX_TASKS = 30
 VIEWING_MS = 12000
@@ -41,10 +41,9 @@ received = {'count': 0}
 TOOLS = [
     {
         'name': 'open_usage_desk',
-        'description': "Opens the live token usage window. With in_app true it opens nothing and returns the window's address.",
+        'description': "Opens Usage Desk in the web browser, not beside the task. Never call this to answer /cowork-usage: follow the cowork-usage skill, which opens the panel beside the task. Call it only when that skill says there is no Artifact tool. With in_app true it opens nothing and returns the window's address.",
         'inputSchema': {'type': 'object', 'properties': {'in_app': {'type': 'boolean'}}},
         'annotations': {'readOnlyHint': True},
-        '_meta': {'anthropic/alwaysLoad': True},
     },
     {
         'name': 'report_usage',
@@ -54,7 +53,6 @@ TOOLS = [
             'panel': {'type': 'string', 'description': 'The link of a Usage Desk panel that was just published, to remember it.'},
         }},
         'annotations': {'readOnlyHint': True},
-        '_meta': {'anthropic/alwaysLoad': True},
     },
     {
         'name': 'read_usage',

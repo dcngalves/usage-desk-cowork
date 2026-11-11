@@ -34,6 +34,8 @@ const snapshot: { chatTokens: number; chatWindow: number; chatPercent: number; f
 let breakdown: unknown = null
 let scan: { chat?: { ttl?: string } } | null = null
 let isDeepDirty = false
+// Figures that did not reach the computer yet: they are sent again at the next check.
+let isUnsent = false
 const live = { isWorking: false, recent: [] as Activity[], counts: {} as Record<string, number>, files: [] as string[], skills: [] as string[], connectors: {} as Record<string, number> }
 let agents: AgentRun[] = []
 const cache = { lastEnd: 0, ttlMs: FIVE_M, isKnown: false, tokens: 0 }
@@ -204,16 +206,19 @@ async function greet($: EngineInterface, e: ToolCallInput, next: (e: ToolCallInp
 async function send($: EngineInterface, isCheck = false) {
   if (isSending) return
   isSending = true
+  let isFull = false
   lastSent = Date.now()
   try {
     const name = await findServer($)
     if (!name) throw new Error('the program on the computer is not connected')
     const state: Record<string, unknown> = { snapshot, live, agents, cache, warm, notice, steps, link }
-    if (isDeepDirty && !isCheck) {
+    const hasDeep = isDeepDirty && !isCheck
+    if (hasDeep) {
       state.breakdown = breakdown
       state.scan = scan
       isDeepDirty = false
     }
+    isFull = hasDeep
     const began = Date.now()
     // A check carries no figures: it only asks whether a panel is open and what its buttons asked for.
     if (!sid) sid = await $.session.id()
@@ -224,6 +229,9 @@ async function send($: EngineInterface, isCheck = false) {
     // A send from here can never raise a permission card: it is refused until the person has
     // chosen Always allow. So one that got through means the plugin may keep sending.
     link.quickRuns += 1
+    // The figures just sent still said the link was closed, so they go once more.
+    if (!link.isOpen) isUnsent = true
+    else if (!isCheck) isUnsent = false
     link.isOpen = true
     await note($, 'send', { ok: true, ms: Date.now() - began })
     const text = result.content.map(c => ('text' in c ? String(c.text) : '')).join('')
@@ -234,6 +242,8 @@ async function send($: EngineInterface, isCheck = false) {
     // Declined or failed: wait for the next reply, and never ask again before then.
     link.quickRuns = 0
     link.isOpen = false
+    isUnsent = true
+    if (isFull) isDeepDirty = true
     await note($, 'send', String(error).slice(0, 300))
   } finally {
     isSending = false
@@ -334,7 +344,8 @@ export const register: Register = on => {
         // Between replies it only sends once Cowork has stopped asking about each send.
         // While the window is open, an idle check also collects what its buttons asked for.
         if (link.isOpen && ((live.isWorking && gap >= SEND_GAP_MS) || (isViewing && gap >= IDLE_ASK_MS))) await send($)
-        else if (link.isOpen && gap >= IDLE_CHECK_MS) await send($, true)
+        else if (isUnsent && gap >= IDLE_ASK_MS) await send($)
+        else if (gap >= IDLE_CHECK_MS) await send($, true)
       })().catch(() => undefined)
     })
     return started

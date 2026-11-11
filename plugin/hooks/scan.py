@@ -200,7 +200,16 @@ def size(value):
         return len(json.dumps(value))
     return 0
 
+# Opening a page that already exists is not making one.
+def is_opening(block):
+    return block.get('name') == 'Artifact' and (block.get('input') or {}).get('action') == 'open'
+
+def tool_of(block):
+    return 'ArtifactOpen' if is_opening(block) else block.get('name') or 'tool'
+
 def label_of(block):
+    if is_opening(block):
+        return ''
     inp = block.get('input') or {}
     for key in ('file_path', 'path', 'notebook_path', 'url', 'query', 'pattern', 'description', 'skill', 'command'):
         if isinstance(inp.get(key), str) and inp[key]:
@@ -242,7 +251,7 @@ def chat(sid):
                 if isinstance(block, dict) and block.get('type') == 'text' and (block.get('text') or '').strip():
                     step['hasText'] = True
                 elif isinstance(block, dict) and block.get('type') == 'tool_use' and block.get('id') not in jobs:
-                    jobs[block.get('id')] = {'id': block.get('id'), 'tool': block.get('name') or 'tool', 'label': label_of(block), 'request': est(len(json.dumps(block.get('input')))), 'result': 0, 'isError': False}
+                    jobs[block.get('id')] = {'id': block.get('id'), 'tool': tool_of(block), 'label': label_of(block), 'request': est(len(json.dumps(block.get('input')))), 'result': 0, 'isError': False}
                     step['jobs'].append(block.get('id'))
         elif isinstance(content, list):
             for block in content:
@@ -272,7 +281,7 @@ def chat(sid):
             elif t == 'tool_use':
                 out['toolCalls'] += 1
                 out['toolInputTokens'] += est(len(json.dumps(block.get('input'))))
-                uses[block.get('id')] = (block.get('name') or 'tool', label_of(block))
+                uses[block.get('id')] = (tool_of(block), label_of(block))
             elif t == 'tool_result':
                 name, label = uses.get(block.get('tool_use_id'), ('tool', ''))
                 tokens = est(size(block.get('content')))
