@@ -18,7 +18,7 @@ import time
 import urllib.parse
 import webbrowser
 
-VERSION = '0.9.5'
+VERSION = '0.9.6'
 PORT = 47821
 MAX_TASKS = 30
 VIEWING_MS = 12000
@@ -166,11 +166,9 @@ def greet(session, panel):
     if session:
         # A panel that opens in the next few minutes belongs to this task.
         change_state(lambda saved: saved.update(greeted={'task': session, 'at': int(time.time() * 1000)}))
-    if not session:
-        # Without the plugin's help, the task that reported in the last minute is the one asking.
-        paths = task_paths()
-        if paths and time.time() - os.path.getmtime(paths[0]) < 60:
-            session = os.path.basename(paths[0])[:-5]
+    else:
+        # Which task asked is unknown, so a panel must not follow the task before it.
+        change_state(lambda saved: saved.pop('greeted', None))
     return {'task': session or None, 'panel': panels.get(VERSION), 'title': f'Usage Desk Cowork {VERSION}'}
 
 

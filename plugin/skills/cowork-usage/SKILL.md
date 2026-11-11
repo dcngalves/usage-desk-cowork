@@ -7,7 +7,7 @@ Every step here costs the person tokens, so use the fewest calls you can, with n
 
 1. Call `report_usage` with no arguments. Use ToolSearch first only if the tool is not loaded. Its answer holds `task` (this task's id) and `panel` (the link of the person's Usage Desk panel, or nothing).
 2. If you are told the panel is already open, skip to step 4.
-3. Open the panel beside this task: Artifact `action: "open"` with the `panel` link followed by `#` and the `task` id. If opening with the `#` part is refused, open the link alone.
+3. Open the panel beside this task: Artifact `action: "open"` with the `panel` link followed by `#` and the `task` id. If `task` is empty, or opening with the `#` part is refused, open the link alone.
 4. Reply only: `Usage Desk is open beside this task.`
 
 Only when `panel` is empty, or opening it fails because it no longer exists, set the panel up once:

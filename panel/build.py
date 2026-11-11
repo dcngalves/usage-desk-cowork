@@ -107,7 +107,7 @@ TRANSPORT = r"""
 })()
 """
 
-page = f"""<title>Usage Desk Cowork 0.9.5</title>
+page = f"""<title>Usage Desk Cowork 0.9.6</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>{STYLE}</style>
 <main>

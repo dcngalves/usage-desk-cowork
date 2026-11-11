@@ -58,8 +58,19 @@ let isViewing = true
 const quiet = (work: Promise<unknown>) => work.catch(() => undefined)
 
 // Plugins uploaded in Cowork also reach Code tab chats, where this should stay out of the way.
+let isCowork = false
+let isStarted = false
 async function inCowork($: EngineInterface) {
-  return (await $.env.get('HOME')) === '/root'
+  if (!isCowork) {
+    // A task that has not used its sandbox yet has another HOME, so the link to the person's
+    // computer, which only Cowork tasks have, is checked too.
+    isCowork = (await $.env.get('HOME')) === '/root' || (await $.tool.list()).some(t => t.name.startsWith('mcp__remote-devices__'))
+  }
+  if (isCowork && !isStarted) {
+    isStarted = true
+    await start($)
+  }
+  return isCowork
 }
 
 async function note($: EngineInterface, section: string, value: unknown) {
@@ -304,19 +315,25 @@ async function warmTick($: EngineInterface, at: number) {
   }
 }
 
+// Runs once per task, from whichever hook first finds itself in Cowork.
+async function start($: EngineInterface) {
+  sid = await $.session.id()
+  void note($, 'start', { at: Date.now(), task: sid })
+  void quiet(refresh($, true))
+}
+
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     const started = await next(e)
-    if (!(await inCowork($))) return started
-    sid = await $.session.id()
     cwd = e.cwd
-    void note($, 'start', { at: Date.now(), task: sid })
-    void quiet(refresh($, true))
+    await quiet(inCowork($))
 
     let ticks = 0
     $.clock.every(1000, () => {
       ticks += 1
       void (async () => {
+        // Until the task is known to be a Cowork one, it only looks again now and then.
+        if (!isCowork && (ticks % (ticks < 60 ? 5 : 60) !== 0 || !(await inCowork($)))) return
         const at = await $.clock.now()
         await warmTick($, at)
         if (live.isWorking && ticks % 5 === 0) await refresh($, false)
