@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Usage Desk</title>
+<style>
+:root { color-scheme: light dark; --text: #1f1f1f; --dim: #6b6b68; --line: #e4e4e1; --fill: #f4f3f0; --bg: #faf9f5; --mute: #9a9a96; --track: #ecebe8; --accent: #d97757; }
+@media (prefers-color-scheme: dark) { :root { --text: #ececec; --dim: #a8a8a4; --line: #333331; --fill: #262625; --bg: #1f1e1d; --mute: #7d7d79; --track: #2c2c2b; } }
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body { margin: 0 auto; max-width: 640px; padding: 14px 16px 28px; color: var(--text); font: 13px/1.45 ui-sans-serif, -apple-system, "Segoe UI", sans-serif; overflow-x: hidden; }
+svg { display: block; max-width: 100%; }
+#head { display: flex; justify-content: space-between; color: var(--dim); font-size: 12px; margin-bottom: 10px; gap: 12px; }
+.hero { display: flex; gap: 8px; align-items: center; }
+.hero .right { flex: 1; min-width: 0; }
+.press { cursor: pointer; border-radius: 4px; }
+.press:hover { background: color-mix(in srgb, var(--text) 5%, transparent); }
+.press:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.section { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.dim { color: var(--dim); }
+p { margin: 0; }
+.row { display: flex; justify-content: space-between; gap: 10px; padding: 2px 0; }
+.row .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row .value { flex: none; color: var(--dim); font-variant-numeric: tabular-nums; }
+.row .note { color: var(--dim); margin-left: 6px; }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; }
+button { font: inherit; color: inherit; background: var(--fill); border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; cursor: pointer; align-self: flex-start; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+button.plain { background: none; border: 0; padding: 2px 0; color: var(--dim); text-align: left; }
+button.plain:hover { color: var(--text); }
+input { font: inherit; color: inherit; background: var(--fill); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; flex: 1; min-width: 0; }
+.inline { display: flex; gap: 6px; align-items: center; }
+.stack { display: flex; flex-direction: column; }
+</style>
+</head>
+<body>
+<div id="head"><span id="version">Usage Desk</span><span id="live">Connecting</span></div>
+<div id="root"></div>
+<script>
+// This window reads from the program that serves it, on this computer only.
+(function () {
+  const q = `?k=${encodeURIComponent(new URLSearchParams(location.search).get('k'))}`
+  const post = (path, body) => fetch(path + q, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).catch(() => undefined)
+  window.usageDeskTransport = {
+    everyMs: 1000,
+    lostWords: 'Not updating. Open it again with /cowork-usage',
+    read: async () => {
+      const reply = await fetch('/data' + q)
+      if (!reply.ok) throw new Error('refused')
+      return reply.json()
+    },
+    act: (task, action) => post('/action', { task, action }),
+    savePrefs: patch => post('/prefs', patch),
+  }
+})()
+</script>
+<script src="/window-lib.js"></script>
+<script src="/window-view.js"></script>
+</body>
+</html>

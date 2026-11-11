@@ -1,0 +1,50 @@
+{
+  "manifest_version": "0.2",
+  "name": "usage-desk",
+  "display_name": "Usage Desk",
+  "version": "0.9.4",
+  "description": "Usage Desk 0.9.4. Keeps the latest token counts of each Cowork task on this computer, for the Usage Desk panel.",
+  "long_description": "The part of Usage Desk that runs on your computer. The Usage Desk plugin for Cowork sends it token counts, tool names, file paths and short labels, never message text. It keeps the last 30 tasks in ~/.claude/usage-desk-cowork and sends nothing anywhere else. It needs Python 3.",
+  "author": {
+    "name": "dcngalves",
+    "url": "https://github.com/dcngalves/usage-desk-cowork"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dcngalves/usage-desk-cowork"
+  },
+  "license": "MIT",
+  "server": {
+    "type": "python",
+    "entry_point": "server/server.py",
+    "mcp_config": {
+      "command": "python3",
+      "args": [
+        "${__dirname}/server/server.py"
+      ]
+    }
+  },
+  "tools": [
+    {
+      "name": "open_usage_desk",
+      "description": "Opens the live token usage window."
+    },
+    {
+      "name": "report_usage",
+      "description": "Receives the latest figures from the Usage Desk plugin."
+    },
+    {
+      "name": "read_usage",
+      "description": "Gives the latest figures to the Usage Desk panel."
+    },
+    {
+      "name": "usage_action",
+      "description": "Passes a button press from the Usage Desk panel to the task."
+    }
+  ],
+  "compatibility": {
+    "platforms": [
+      "darwin"
+    ]
+  }
+}
