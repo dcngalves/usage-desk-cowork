@@ -2,8 +2,8 @@
   "manifest_version": "0.2",
   "name": "usage-desk",
   "display_name": "Usage Desk",
-  "version": "0.9.7",
-  "description": "Usage Desk 0.9.7. Keeps the latest token counts of each Cowork task on this computer, for the Usage Desk panel.",
+  "version": "0.9.8",
+  "description": "Usage Desk 0.9.8. Keeps the latest token counts of each Cowork task on this computer, for the Usage Desk panel.",
   "long_description": "The part of Usage Desk that runs on your computer. The Usage Desk plugin for Cowork sends it token counts, tool names, file paths and short labels, never message text. It keeps the last 30 tasks in ~/.claude/usage-desk-cowork and sends nothing anywhere else. It needs Python 3.",
   "author": {
     "name": "dcngalves",

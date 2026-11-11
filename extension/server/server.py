@@ -18,7 +18,7 @@ import time
 import urllib.parse
 import webbrowser
 
-VERSION = '0.9.7'
+VERSION = '0.9.8'
 PORT = 47821
 MAX_TASKS = 30
 VIEWING_MS = 12000

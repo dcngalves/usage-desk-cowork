@@ -192,22 +192,12 @@ async function refresh($: EngineInterface, deep: boolean, exact = false) {
 }
 
 // Claude's one call from the /cowork-usage skill. The task's id is added here, so Claude need not
-// look it up, and the panel is opened from here where the app allows it, which saves a request.
+// look it up. Claude opens the panel itself: an open asked for from here reports success but shows nothing.
 async function greet($: EngineInterface, e: ToolCallInput, next: (e: ToolCallInput) => Promise<ToolCallResult>) {
   if (!sid) sid = await $.session.id()
   const given = (e as unknown as { session?: unknown }).session
   const result = await next({ ...e, session: typeof given === 'string' && given ? given : sid, viaPlugin: true } as ToolCallInput)
-  try {
-    if (result.deny !== undefined || result.isError) return result
-    const panel = (JSON.parse(result.text ?? '{}') as { panel?: unknown }).panel
-    if (typeof panel !== 'string' || !panel) return result
-    const open = $.tool.call({ tool: 'Artifact', action: 'open', url: `${panel}#${sid}` } as never).then(r => (r.deny === undefined && !r.isError ? 'yes' : 'refused'), () => 'failed')
-    link.opened = await Promise.race([open, $.clock.sleep(4000).then(() => 'slow')])
-    if (link.opened !== 'yes') return result
-    return { ...result, context: ['The Usage Desk panel is already open beside this task. Do not open it again. Reply only: Usage Desk is open beside this task.'] }
-  } catch {
-    return result
-  }
+  return result
 }
 
 // Sends the latest figures. Only one send runs at a time, so a pending permission card can't pile up.
