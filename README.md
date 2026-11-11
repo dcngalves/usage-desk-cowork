@@ -54,7 +54,7 @@ Cowork re-reads its own setup, about 170,000 tokens, on every request Claude mak
 
 - **Installing the extension and the plugin: none.** Neither calls Claude.
 - **The very first `/cowork-usage` after installing or updating: about 1.1 million tokens** in 7 requests, nearly all cache re-reads, which was about $0.07 on Haiku 5.5 at list prices in a test. Claude publishes your private panel page in that run. This happens once per version.
-- **`/cowork-usage` in later tasks: about 610,000 to 760,000 tokens** in 4 or 5 requests, about $0.05 to $0.06 on Haiku 5.5. The test took 5 requests, one of them a step Claude added by itself. A larger model costs more for the same steps.
+- **`/cowork-usage` in later tasks: about 610,000 tokens** in 4 requests, about $0.05 on Haiku 5.5 in a test. If Claude adds a step of its own, that is one more request, about 150,000 tokens. A larger model costs more for the same steps.
 - **Live updates after that: none.** The plugin sends figures without asking Claude.
 - **Keep warm and Compact** use your limit only when you press them.
 
